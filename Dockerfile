@@ -1,7 +1,15 @@
 FROM node:20-slim
 WORKDIR /app
+
+# Install build dependencies for native modules (better-sqlite3)
+RUN apt-get update && apt-get install -y \
+    python3 \
+    make \
+    g++ \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY package*.json ./
-RUN npm install --legacy-peer-deps || (cat /root/.npm/_logs/*.log && exit 1)
+RUN npm install --legacy-peer-deps
 COPY . .
 RUN npm run build
 EXPOSE 3000
