@@ -1,7 +1,6 @@
 FROM node:20-slim
 WORKDIR /app
 
-# Install build dependencies for native modules (better-sqlite3)
 RUN apt-get update && apt-get install -y \
     python3 \
     make \
@@ -13,4 +12,4 @@ RUN npm install --legacy-peer-deps
 COPY . .
 RUN npm run build
 EXPOSE 3000
-CMD ["npm", "start"]
+CMD ["sh", "-c", "node migrate.js && npm start"]
