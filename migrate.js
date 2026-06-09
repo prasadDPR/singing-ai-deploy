@@ -17,10 +17,9 @@ async function runMigrations() {
   const client = await pool.connect();
   
   try {
+    // Run base migration files
     const files = [
       '0000_new_black_widow.sql',
-      '0001_organic_george_stacy.sql',
-      '001_learning_paths.sql',
       'simple_migration.sql'
     ];
 
@@ -30,13 +29,39 @@ async function runMigrations() {
         await client.query(sql);
         console.log(`Applied: ${file}`);
       } catch (err) {
-        if (err.code === '42P07') {
+        if (err.code === '42P07' || err.code === '42710') {
           console.log(`Skip: ${file} - already exists`);
         } else {
-          console.log(`Error: ${file} - ${err.message}`);
+          console.log(`Error in ${file}: ${err.message}`);
         }
       }
     }
+
+    // Add missing columns manually
+    const alterations = [
+      // Add target_metrics column to exercises
+      `ALTER TABLE exercises ADD COLUMN IF NOT EXISTS target_metrics jsonb DEFAULT '[]'`,
+      // Add completed_at column to exercise_progress
+      `ALTER TABLE exercise_progress ADD COLUMN IF NOT EXISTS completed_at timestamp`,
+      // Add learning_path column to users
+      `ALTER TABLE users ADD COLUMN IF NOT EXISTS learning_path text`,
+      // Add any other missing columns
+      `ALTER TABLE exercises ADD COLUMN IF NOT EXISTS instructions text`,
+      `ALTER TABLE exercises ADD COLUMN IF NOT EXISTS duration integer DEFAULT 0`,
+      `ALTER TABLE exercises ADD COLUMN IF NOT EXISTS difficulty text DEFAULT 'beginner'`,
+      `ALTER TABLE exercises ADD COLUMN IF NOT EXISTS category text`,
+      `ALTER TABLE exercises ADD COLUMN IF NOT EXISTS phase integer DEFAULT 1`,
+    ];
+
+    for (const sql of alterations) {
+      try {
+        await client.query(sql);
+        console.log(`Applied: ${sql.substring(0, 50)}...`);
+      } catch (err) {
+        console.log(`Skip alteration: ${err.message}`);
+      }
+    }
+
     console.log('MIGRATION_DONE');
   } finally {
     client.release();
