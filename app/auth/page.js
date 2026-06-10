@@ -114,7 +114,7 @@ function AuthForm() {
       if (user.email) {
         sendConfirmationEmail(user.name, user.email).catch(console.error);
       }
-      router.push("/dashboard");
+      window.location.href = "/dashboard";
       toast({ title: "Welcome back!", description: "Successfully logged in." });
     },
     onError: (error) => {
@@ -136,7 +136,7 @@ function AuthForm() {
       if (user.email) {
         sendConfirmationEmail(user.name, user.email).catch(console.error);
       }
-      router.push("/dashboard");
+      window.location.href = "/dashboard";
       toast({
         title: "Account created!",
         description: "Welcome to your singing journey.",
