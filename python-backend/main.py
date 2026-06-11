@@ -56,6 +56,10 @@ visualizer   = JingjuVisualizer()
 async def root():
     return {"message": "Singing AI Evaluation System is active. Use POST /analyze to evaluate audio."}
 
+@app.get("/health")
+async def health():
+    return {"status": "ok"}
+
 # analyse analyse
 @app.post("/analyze")
 async def analyze_audio(file: UploadFile = File(...), mode: str = "song"):
