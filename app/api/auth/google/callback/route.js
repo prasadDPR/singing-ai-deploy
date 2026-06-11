@@ -5,13 +5,15 @@ import { storage } from "../../../../../server/storage.js";
 export async function GET(req) {
   const code = req.nextUrl.searchParams.get("code");
   const error = req.nextUrl.searchParams.get("error");
-  
+
+  const baseUrl = process.env.NEXTAUTH_URL || req.nextUrl.origin;
+
   if (error) {
-    return NextResponse.redirect(new URL("/auth?error=Authentication%20failed", req.url));
+    return NextResponse.redirect(new URL("/auth?error=Authentication%20failed", baseUrl));
   }
   
   if (!code) {
-    return NextResponse.redirect(new URL("/auth", req.url));
+    return NextResponse.redirect(new URL("/auth", baseUrl));
   }
 
   const clientId = process.env.GOOGLE_CLIENT_ID;
@@ -77,7 +79,7 @@ export async function GET(req) {
     const isSignup = mode === "signup";
 
     if (isSignup && !isNewUser) {
-        return NextResponse.redirect(new URL("/auth?error=Account%20already%20exists.%20Please%20log%20in%20instead.", req.url));
+      return NextResponse.redirect(new URL("/auth?error=Account%20already%20exists.%20Please%20log%20in%20instead.", baseUrl));
     }
 
     const cookieStore = await cookies();
@@ -90,12 +92,12 @@ export async function GET(req) {
     });
 
     if (isNewUser || isSignup) {
-      return NextResponse.redirect(new URL("/auth/onboarding", req.url));
+      return NextResponse.redirect(new URL("/auth/onboarding", baseUrl));
     }
 
-    return NextResponse.redirect(new URL("/dashboard", req.url));
+    return NextResponse.redirect(new URL("/dashboard", baseUrl));
   } catch (err) {
     console.error("Google Callback Error:", err);
-    return NextResponse.redirect(new URL("/auth?error=Authentication%20failed", req.url));
+    return NextResponse.redirect(new URL("/auth?error=Authentication%20failed", baseUrl));
   }
 }
